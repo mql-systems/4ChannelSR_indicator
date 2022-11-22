@@ -44,6 +44,7 @@ input ENUM_LINE_STYLE              i_CtnLineStyle = STYLE_SOLID;        // Style
 input int                          i_CtnLineWidth = 2;                  // Width
 
 //--- global variables
+bool     g_IsInitChsr = false;
 long     g_ChartId = 0;
 int      g_ChsrTotal = 0;
 int      g_ChsrIndex = 0;
@@ -86,19 +87,6 @@ int OnInit()
    else
       g_CalcPeriod = (ENUM_TIMEFRAMES)i_CalcPeriod;
    
-   //--- initialize 4ChannelSR
-   int barCnt = iBarShift(_Symbol,g_CalcPeriod,i_StartDate,false);
-   if (barCnt == -1)
-   {
-      Print("Error: The history for calculating the number of bars is not loaded");
-      return INIT_FAILED;
-   }
-   if (! Chsr.Init(_Symbol, g_CalcPeriod, barCnt+1))
-   {
-      Print("Error: History not found");
-      return INIT_FAILED;
-   }
-   
    //--- set object tooltip
    switch (g_CalcPeriod)
    {
@@ -139,16 +127,28 @@ int OnCalculate(const int rates_total,
    int limit = rates_total - prev_calculated;
    if (limit == 0)
       return rates_total;
-   if (! Chsr.Calculate())
-      return prev_calculated;
    
    if (prev_calculated == 0)
    {
       g_ChsrTotal = 0;
       g_ChsrIndex = 0;
       ObjectsDeleteAll(g_ChartId, g_4ChannelPrefix);
+      
+      //--- initialize 4ChannelSR
+      if (! g_IsInitChsr)
+      {
+         int barCnt = iBarShift(_Symbol,g_CalcPeriod,i_StartDate,false);
+         if (barCnt == -1)
+            return 0;
+         g_IsInitChsr = Chsr.Init(_Symbol, g_CalcPeriod, barCnt+1);
+         if (! g_IsInitChsr)
+            return 0;
+      }
    }
-   else if (g_ChsrTotal == Chsr.Total())
+   
+   if (! Chsr.Calculate())
+      return prev_calculated;
+   if (g_ChsrTotal == Chsr.Total())
       return rates_total;
    
    g_ChsrTotal = Chsr.Total();
