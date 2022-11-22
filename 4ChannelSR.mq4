@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                   4ChannelSR.mq5 |
+//|                                                   4ChannelSR.mq4 |
 //|             Copyright 2022. Diamond Systems Corp. and Odiljon T. |
 //|                                   https://github.com/mql-systems |
 //+------------------------------------------------------------------+
