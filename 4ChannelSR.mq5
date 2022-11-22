@@ -29,6 +29,15 @@ enum ENUM_CONTINUING_LINES_AMOUNT
    CTN_LINE_3 = 3,   // 3
    CTN_LINE_4 = 4    // 4
 };
+enum ENUM_ADT_LINES_AMOUNT
+{
+   ADT_LINE_0 = 0,   // false
+   ADT_LINE_A = 100, // auto
+   ADT_LINE_1 = 1,   // 1
+   ADT_LINE_2 = 2,   // 2
+   ADT_LINE_3 = 3,   // 3
+   ADT_LINE_4 = 4    // 4
+};
 
 //--- inputs
 input datetime                     i_StartDate = __DATE__-(86400*60);   // Start date
@@ -42,6 +51,12 @@ input ENUM_CONTINUING_LINES_AMOUNT i_CtnLineAmount = CTN_LINE_2;        // Amoun
 input color                        i_CtnLineColor = clrYellow;          // Color
 input ENUM_LINE_STYLE              i_CtnLineStyle = STYLE_SOLID;        // Style
 input int                          i_CtnLineWidth = 2;                  // Width
+input string                       i_s3 = "";                           // === Additional lines ===
+input ENUM_ADT_LINES_AMOUNT        i_AdtLineAmount = ADT_LINE_0;        // Amount
+input int                          i_AdtLineDistanceMin = 100;          // Min distance (if Amount==auto)
+input color                        i_AdtLineColor = clrPink;            // Color
+input ENUM_LINE_STYLE              i_AdtLineStyle = STYLE_DASH;         // Style
+input int                          i_AdtLineWidth = 1;                  // Width
 
 //--- global variables
 bool     g_IsInitChsr = false;
@@ -57,6 +72,10 @@ double   g_PriceHighSR;
 double   g_PriceLowSR;
 double   g_PriceHigh;
 double   g_PriceLow;
+bool     g_IsAdtLine;
+double   g_PriceStepAdt;
+double   g_AdtLineMinStep;
+int      g_AdtLineAmount;
 //---
 ENUM_TIMEFRAMES g_CalcPeriod;
 //---
@@ -94,6 +113,21 @@ int OnInit()
       case PERIOD_MN1: g_ObjTooltip = "MN"; break;
       default:         g_ObjTooltip = "D1"; break;
    }
+   
+   //--- Adt line
+   g_IsAdtLine = true;
+   g_AdtLineAmount = 0;
+   if (i_AdtLineAmount == ADT_LINE_0)
+      g_IsAdtLine = false;
+   else if (i_AdtLineAmount == ADT_LINE_A)
+   {
+      if (i_AdtLineDistanceMin > 0)
+         g_AdtLineMinStep = NormalizeDouble(i_AdtLineDistanceMin * _Point, _Digits);
+      else
+         g_IsAdtLine = false;
+   }
+   else
+      g_AdtLineAmount = i_AdtLineAmount;
    
    //--- global variables
    g_ChartId = ChartID();
@@ -180,6 +214,27 @@ int OnCalculate(const int rates_total,
       g_ZoneStart = ChsrInfoCurr.timeZoneStart;
       g_ZoneEnd = ChsrInfoCurr.timeZoneEnd;
       
+      //--- Additional line param
+      if (g_IsAdtLine)
+      {
+         if (i_AdtLineAmount == ADT_LINE_A)
+         {
+            int adtCnt = int(g_PriceStepSR / g_AdtLineMinStep);
+            if (adtCnt >= 2)
+            {
+               g_AdtLineAmount = adtCnt - 1;
+               g_PriceStepAdt = g_PriceStepSR / adtCnt;
+            }
+            else
+            {
+               g_AdtLineAmount = 0;
+               g_PriceStepAdt = 0.0;
+            }
+         }
+         else
+            g_PriceStepAdt = g_PriceStepSR / (g_AdtLineAmount + 1);
+      }
+
       //--- Main lines
       CreateMainLines(ChsrInfoCurr.low);
       
@@ -216,17 +271,14 @@ int OnCalculate(const int rates_total,
 //+------------------------------------------------------------------+
 void CreateMainLines(double low)
 {
+   double price;
    for (int i=0; i<5; i++)
    {
-      CreateLine(
-         "Main"+string(i-2),
-         g_ZoneStart,
-         g_ZoneEnd,
-         low+(g_PriceStepSR*i),
-         i_MainLineColor,
-         i_MainLineStyle,
-         i_MainLineWidth
-      );
+      price = low+(g_PriceStepSR*i);
+      CreateLine("Main"+string(i-2), g_ZoneStart, g_ZoneEnd, price, i_MainLineColor, i_MainLineStyle, i_MainLineWidth);
+      
+      if (g_AdtLineAmount && i!=4)
+         CreateAdditionalLines(price);
    }
 }
 
@@ -237,6 +289,9 @@ void CreateContinuingLines(double high, double low)
 {
    while (g_PriceHigh < high)
    {
+      if (g_AdtLineAmount)
+         CreateAdditionalLines(g_PriceHighSR);
+      
       g_PriceHigh += g_PriceStepSR;
       g_PriceHighSR += g_PriceStepSR;
       
@@ -249,7 +304,19 @@ void CreateContinuingLines(double high, double low)
       g_PriceLowSR -= g_PriceStepSR;
       
       CreateLine("Ctn", g_ZoneStart, g_ZoneEnd, g_PriceLowSR, i_CtnLineColor, i_CtnLineStyle, i_CtnLineWidth);
+      
+      if (g_AdtLineAmount)
+         CreateAdditionalLines(g_PriceLowSR);
    }
+}
+
+//+------------------------------------------------------------------+
+//| Create Additional lines                                          |
+//+------------------------------------------------------------------+
+void CreateAdditionalLines(double priceLow)
+{
+   for (int i=1; i<=g_AdtLineAmount; i++)
+      CreateLine("Adt", g_ZoneStart, g_ZoneEnd, priceLow+(g_PriceStepAdt*i), i_AdtLineColor, i_AdtLineStyle, i_AdtLineWidth);
 }
 
 //+------------------------------------------------------------------+
