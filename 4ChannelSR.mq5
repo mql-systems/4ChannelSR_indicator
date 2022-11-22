@@ -126,7 +126,13 @@ int OnCalculate(const int rates_total,
 {
    int limit = rates_total - prev_calculated;
    if (limit == 0)
+   {
+      //--- checks and updates continuation lines
+      if (g_PriceHigh < high[rates_total-1] || g_PriceLow > low[rates_total-1])
+         CreateContinuingLines(high[rates_total-1], low[rates_total-1]);
+      
       return rates_total;
+   }
    
    if (prev_calculated == 0)
    {
@@ -148,8 +154,20 @@ int OnCalculate(const int rates_total,
    
    if (! Chsr.Calculate())
       return prev_calculated;
+   
    if (g_ChsrTotal == Chsr.Total())
+   {
+      //--- checks and updates continuation lines
+      ArraySetAsSeries(high, true);
+      ArraySetAsSeries(low, true);
+      for (int i=limit-1; i>=0; i--)
+      {
+         if (g_PriceHigh < high[i] || g_PriceLow > low[i])
+            CreateContinuingLines(high[i], low[i]);
+      }
+      
       return rates_total;
+   }
    
    g_ChsrTotal = Chsr.Total();
    ChannelSRInfo ChsrInfoCurr, ChsrInfoNext;
