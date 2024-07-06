@@ -33,7 +33,7 @@ enum ENUM_ADT_LINES_AMOUNT
 };
 
 //--- inputs
-input datetime                     i_StartDate = __DATE__-(86400*60);   // Start date
+input int                          i_PeriodCnt = 5;                     // Period count
 input ENUM_CALC_PERIOD             i_CalcPeriod = CALC_PERIOD_AUTO;     // Calculate Period
 input string                       i_s1 = "";                           // === Main lines ===
 input color                        i_MainLineColor = clrRed;            // Color
@@ -80,9 +80,9 @@ C4ChannelSR Chsr;
 int OnInit()
 {
    //--- check input parameters
-   if (i_StartDate + 86400 > TimeCurrent())
+   if (i_PeriodCnt < 1)
    {
-      Print("Error: Start date entered incorrectly");
+      Print("Error: Enter the number of periods to calculate");
       return INIT_PARAMETERS_INCORRECT;
    }
 
@@ -172,10 +172,7 @@ int OnCalculate(const int rates_total,
       //--- initialize 4ChannelSR
       if (! g_isInitChsr)
       {
-         int barCnt = iBarShift(_Symbol, g_calcPeriod, i_StartDate, false);
-         if (barCnt == -1)
-            return 0;
-         g_isInitChsr = Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, barCnt + 1);
+         g_isInitChsr = Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, i_PeriodCnt);
          if (! g_isInitChsr)
             return 0;
       }
