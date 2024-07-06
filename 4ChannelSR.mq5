@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                                   4ChannelSR.mq5 |
-//|             Copyright 2022. Diamond Systems Corp. and Odiljon T. |
+//|        Copyright 2022-2024. Diamond Systems Corp. and Odiljon T. |
 //|                                   https://github.com/mql-systems |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2022. Diamond Systems Corp. and Odiljon T."
+#property copyright "Copyright 2022-2024. Diamond Systems Corp. and Odiljon T."
 #property link      "https://github.com/mql-systems"
 #property version   "1.00"
 #property indicator_chart_window
