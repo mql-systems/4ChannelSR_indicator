@@ -33,18 +33,36 @@ enum ENUM_ADT_LINES_AMOUNT
 };
 
 //--- inputs
+#ifdef __MQL5__
+input group                        "Basic settings"
+#endif
 input int                          i_PeriodCnt = 5;                     // Period count
 input ENUM_CALC_PERIOD             i_CalcPeriod = CALC_PERIOD_AUTO;     // Calculate Period
-input string                       i_s1 = "";                           // === Main lines ===
+//---
+#ifdef __MQL5__
+input group                        "Main lines"
+#else
+input string                       i_s1 = ""; // === Main lines ===
+#endif
 input color                        i_MainLineColor = clrRed;            // Color
 input ENUM_LINE_STYLE              i_MainLineStyle = STYLE_SOLID;       // Style
 input int                          i_MainLineWidth = 2;                 // Width
-input string                       i_s2 = "";                           // === Continuing lines ===
+//---
+#ifdef __MQL5__
+input group                        "Continuing lines"
+#else
+input string                       i_s2 = ""; // === Continuing lines ===
+#endif
 input ENUM_CONTINUING_LINES_AMOUNT i_CtnLineAmount = CTN_LINE_2;        // Amount
 input color                        i_CtnLineColor = clrYellow;          // Color
 input ENUM_LINE_STYLE              i_CtnLineStyle = STYLE_SOLID;        // Style
 input int                          i_CtnLineWidth = 2;                  // Width
-input string                       i_s3 = "";                           // === Additional lines ===
+//---
+#ifdef __MQL5__
+input group                        "Additional lines"
+#else
+input string                       i_s3 = ""; // === Additional lines ===
+#endif
 input ENUM_ADT_LINES_AMOUNT        i_AdtLineAmount = ADT_LINE_0;        // Amount
 input int                          i_AdtLineDistanceMin = 100;          // Min distance (if Amount==auto)
 input color                        i_AdtLineColor = clrPink;            // Color
