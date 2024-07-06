@@ -8,8 +8,8 @@ An indicator based on the 4ChannelSR library. Draws support/resistance levels fr
 
 ## Download
 
-- [MT4](https://github.com/mql-systems/4ChannelSR_indicator/releases/download/v1.00/4ChannelSR.ex4)
-- [MT5](https://github.com/mql-systems/4ChannelSR_indicator/releases/download/v1.00/4ChannelSR.ex5)
+- [MT4](https://github.com/mql-systems/4ChannelSR_indicator/releases/download/v1.01/4ChannelSR.ex4)
+- [MT5](https://github.com/mql-systems/4ChannelSR_indicator/releases/download/v1.01/4ChannelSR.ex5)
 
 [All releases](https://github.com/mql-systems/4ChannelSR_indicator/releases)
 
