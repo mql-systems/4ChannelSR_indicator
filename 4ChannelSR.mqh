@@ -70,7 +70,6 @@ input ENUM_LINE_STYLE              i_AdtLineStyle = STYLE_DASH;         // Style
 input int                          i_AdtLineWidth = 1;                  // Width
 
 //--- global variables
-bool g_isInitChsr = false;
 long g_chartId = 0;
 int g_chsrTotal = 0;
 int g_chsrIndex = 0;
@@ -117,6 +116,13 @@ int OnInit()
    else
       g_calcPeriod = (ENUM_TIMEFRAMES)i_CalcPeriod;
 
+   //--- initialize 4ChannelSR
+   if (! Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, i_PeriodCnt))
+   {
+      Print("Error: Initialize 4ChannelSR; Code: ", GetLastError());
+      return INIT_FAILED;
+   }
+
    //--- set object tooltip
    switch (g_calcPeriod)
    {
@@ -153,6 +159,7 @@ int OnInit()
 void OnDeinit(const int reason)
 {
    ObjectsDeleteAll(g_chartId, g_fchsrObjPrefix);
+   Chsr.Clear();
 }
 
 //+------------------------------------------------------------------+
@@ -186,18 +193,14 @@ int OnCalculate(const int rates_total,
       g_chsrTotal = 0;
       g_chsrIndex = 0;
       ObjectsDeleteAll(g_chartId, g_fchsrObjPrefix);
-
-      //--- initialize 4ChannelSR
-      if (! g_isInitChsr)
-      {
-         g_isInitChsr = Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, i_PeriodCnt);
-         if (! g_isInitChsr)
-            return 0;
-      }
+      Chsr.Clear();
    }
 
    if (! Chsr.Calculate())
+   {
+      Print("Error code: ", GetLastError());
       return prev_calculated;
+   }
 
    if (g_chsrTotal == Chsr.Total())
    {
