@@ -38,6 +38,7 @@ input group                        "Basic settings"
 #endif
 input int                          i_PeriodCnt = 5;                     // Period count
 input ENUM_CALC_PERIOD             i_CalcPeriod = CALC_PERIOD_AUTO;     // Calculate Period
+input ENUM_FCHSR_TYPE              i_FCHSRType = FCHSR_TYPE_HL;         // S/R Type
 //---
 #ifdef __MQL5__
 input group                        "Main lines"
@@ -117,7 +118,7 @@ int OnInit()
       g_calcPeriod = (ENUM_TIMEFRAMES)i_CalcPeriod;
 
    //--- initialize 4ChannelSR
-   if (! Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, i_PeriodCnt))
+   if (! Chsr.Init(_Symbol, (ENUM_FCHSR_PERIODS)g_calcPeriod, i_FCHSRType, i_PeriodCnt))
    {
       Print("Error: Initialize 4ChannelSR; Code: ", GetLastError());
       return INIT_FAILED;
@@ -148,6 +149,7 @@ int OnInit()
 
    //--- global variables
    g_chartId = ChartID();
+   g_chsrTotal = 0;
    g_fchsrObjPrefix += g_objTooltip + "_";
 
    return INIT_SUCCEEDED;
@@ -217,7 +219,9 @@ int OnCalculate(const int rates_total,
    }
 
    g_chsrTotal = Chsr.Total();
-   ChannelSRInfo ChsrInfoCurr, ChsrInfoNext;
+   ChannelSRInfo ChsrInfoCurr;
+   double nextHigh, nextLow;
+   int nextIndex;
 
    for (; g_chsrIndex < g_chsrTotal; g_chsrIndex++)
    {
@@ -262,18 +266,15 @@ int OnCalculate(const int rates_total,
       }
 
       if (g_chsrIndex + 1 < g_chsrTotal)
-      {
-         ChsrInfoNext = Chsr.At(g_chsrIndex + 1);
-         CreateContinuingLines(ChsrInfoNext.high, ChsrInfoNext.low);
-      }
+         nextIndex = g_chsrTotal - g_chsrIndex - 1;
       else
-      {
-         double nextHigh = iHigh(_Symbol, g_calcPeriod, 0);
-         double nextLow = iLow(_Symbol, g_calcPeriod, 0);
-
-         if (nextHigh > 0 && nextLow > 0)
-            CreateContinuingLines(nextHigh, nextLow);
-      }
+         nextIndex = 0;
+      
+      nextHigh = iHigh(_Symbol, g_calcPeriod, nextIndex);
+      nextLow = iLow(_Symbol, g_calcPeriod, nextIndex);
+      
+      if (nextHigh > 0 && nextLow > 0)
+         CreateContinuingLines(nextHigh, nextLow);
    }
 
    return rates_total;

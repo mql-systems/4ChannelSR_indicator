@@ -5,7 +5,8 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2022-2024. Diamond Systems Corp. and Odiljon T."
 #property link      "https://github.com/mql-systems"
-#property version   "1.01"
+#property description "Added Open-Close calculation v1.02"
+#property version   "1.02"
 #property indicator_chart_window
 
 #property indicator_buffers 0;
